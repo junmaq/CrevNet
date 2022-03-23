@@ -22,7 +22,7 @@ parser.add_argument('--batch_size', default=4, type=int, help='batch size')
 parser.add_argument('--log_dir', default='logs', help='base directory to save logs')
 parser.add_argument('--model_dir', default='', help='base directory to save logs')
 parser.add_argument('--name', default='', help='identifier for directory')
-parser.add_argument('--data_root', default='/home/junaid/Desktop/projects/video_prediction/cropped_video_frames_dataset'
+parser.add_argument('--data_root', default='cropped_video_frames_dataset/'
                     , help='root directory for data')
 parser.add_argument('--optimizer', default='adam', help='optimizer to train with')
 parser.add_argument('--niter', type=int, default=1000, help='number of epochs to train for')
