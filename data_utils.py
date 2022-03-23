@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import functools
 from skimage.measure import compare_psnr as psnr_metric
 from skimage.measure import compare_ssim as ssim_metric
+from data.crack import Crack
 from scipy import signal
 from scipy import ndimage
 from PIL import Image, ImageDraw
@@ -85,6 +86,15 @@ def load_dataset(opt):
             train=False,
             data_root=opt.data_root,
             seq_len=opt.max_step)
+    elif opt.dataset == 'crack':
+        train_data = Crack(
+            data_root=opt.data_root,
+            seq_len=opt.max_step,
+            image_size=opt.image_size)
+        test_data = Crack(
+            data_root=opt.data_root,
+            seq_len=opt.max_step,
+            image_size=opt.image_size)
 
     return train_data, test_data
 
@@ -94,12 +104,12 @@ def sequence_input(seq, dtype):
 
 
 def normalize_data(opt, dtype, sequence):
-    if opt.dataset == 'smmnist' or opt.dataset == 'smmnist2' or opt.dataset == 'kth' or opt.dataset == 'bair' or opt.dataset == 'ucf' or opt.dataset == 'kitti':
+    if opt.dataset == 'smmnist' or opt.dataset == 'smmnist2' or opt.dataset == 'kth' or opt.dataset == 'bair' or \
+            opt.dataset == 'ucf' or opt.dataset == 'kitti' or opt.dataset == 'crack':
         sequence.transpose_(0, 1)
         sequence.transpose_(3, 4).transpose_(2, 3)
     else:
         sequence.transpose_(0, 1)
-
     return sequence_input(sequence, dtype)
 
 
