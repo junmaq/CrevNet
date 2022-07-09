@@ -20,7 +20,8 @@ class Crack(object):
     def __getitem__(self, index):
         image_frames = []
 
-        for frame_idx, img_path in enumerate(sorted((Path(self.data_root) / self.crack_video_frames[index]).glob('*.jpg'))):
+        for frame_idx, img_path in enumerate(sorted((Path(self.data_root) /
+                                                     self.crack_video_frames[index]).glob('*.jpg'))):
             image_frame = imread(str(img_path))
             image_frame_resized = resize(image_frame, output_shape=self.image_size)
             image_frames.append(image_frame_resized)
@@ -35,9 +36,9 @@ class Crack(object):
         image_frames_sub = image_frames[::stride]
         if len(image_frames_sub) < self.seq_len:
             image_frames_sub.append(image_frames[-1])
-        assert len(image_frames_sub) == self.seq_len, f"After subsampling length of image frame should be equal to the " \
-                                                  f"sequence length got image_frames={len(image_frames_sub)} for  " \
-                                                  f"seq_len={self.seq_len}"
+        assert len(image_frames_sub) == self.seq_len, f"After subsampling length of image frame should be equal to " \
+                                                      f"the sequence length got image_frames={len(image_frames_sub)}" \
+                                                      f" for seq_len={self.seq_len}"
         for img_idx, img in enumerate(image_frames_sub):
             image_frames_np[img_idx] = img / np.max(img)
         return image_frames_np

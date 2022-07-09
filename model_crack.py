@@ -31,9 +31,9 @@ parser.add_argument('--image_size', type=tuple, default=(256, 128),
                     help='the height / width of the input image to network')
 parser.add_argument('--channels', default=1, type=int)
 parser.add_argument('--dataset', default='crack', help='dataset to train with')
-parser.add_argument('--n_past', type=int, default=10, help='number of frames to condition on')
+parser.add_argument('--n_past', type=int, default=12, help='number of frames to condition on')
 parser.add_argument('--n_future', type=int, default=8, help='number of frames to predict')
-parser.add_argument('--n_eval', type=int, default=18, help='number of frames to predict at eval time')
+parser.add_argument('--n_eval', type=int, default=20, help='number of frames to predict at eval time')
 parser.add_argument('--rnn_size', type=int, default=32, help='dimensionality of hidden layer')
 parser.add_argument('--predictor_rnn_layers', type=int, default=8, help='number of layers')
 parser.add_argument('--beta', type=float, default=0.0001, help='weighting on KL to prior')
@@ -61,7 +61,7 @@ else:
 os.makedirs('%s/gen/' % opt.log_dir, exist_ok=True)
 os.makedirs('%s/plots/' % opt.log_dir, exist_ok=True)
 
-opt.max_step = opt.n_past + opt.n_future + 2
+opt.max_step = opt.n_past + opt.n_future
 print("Random Seed: ", opt.seed)
 random.seed(opt.seed)
 torch.manual_seed(opt.seed)
@@ -121,9 +121,11 @@ def plot(x, epoch, p=False):
     gen_seq = [[] for i in range(nsample)]
     gt_seq = [x[i] for i in range(len(x))]
     mse = 0
+    # x.shape -> seq_len, batch_size, 1 , channels, height, width
     for s in range(nsample):
         frame_predictor.hidden = frame_predictor.init_hidden()
-        memo = Variable(torch.zeros(opt.batch_size, opt.rnn_size, 3, int(opt.image_size[0]/8), int(opt.image_size[1]/8)).cuda())
+        memo = Variable(torch.zeros(opt.batch_size, opt.rnn_size, 3, int(opt.image_size[0]/8),
+                                    int(opt.image_size[1]/8)).cuda())
         gen_seq[s].append(x[0])
         x_in = x[0]
         for i in range(1, opt.n_eval):
@@ -131,17 +133,6 @@ def plot(x, epoch, p=False):
             if i < opt.n_past:
                 _, memo = frame_predictor((h, memo))
                 x_in = x[i]
-                gen_seq[s].append(x_in)
-            elif i == opt.n_past:
-                h_pred, memo = frame_predictor((h, memo))
-                x_in = encoder(h_pred, False).detach()
-                x_in[:, :, 0] = x[i][:, :, 0]
-                x_in[:, :, 1] = x[i][:, :, 1]
-                gen_seq[s].append(x_in)
-            elif i == opt.n_past + 1:
-                h_pred, memo = frame_predictor((h, memo))
-                x_in = encoder(h_pred, False).detach()
-                x_in[:, :, 0] = x[i][:, :, 0]
                 gen_seq[s].append(x_in)
             else:
                 h_pred, memo = frame_predictor((h, memo))
@@ -151,6 +142,7 @@ def plot(x, epoch, p=False):
     to_plot = []
     gifs = [[] for t in range(opt.n_eval)]
     nrow = min(opt.batch_size, 10)
+    # gen_seq.shape -> seq_len, batch_size, 1, channels, height, width
     for i in range(nrow):
         # ground truth sequence
         row = []
@@ -217,14 +209,15 @@ for epoch in tqdm(range(opt.niter)):
     epoch_mse = 0
 
     for i, sequence in tqdm(enumerate(train_loader)):
+        # x.shape -> seq_len, b_size, channels, height, width
         x = data_utils.normalize_data(opt, dtype, sequence)
         input = []
         for j in range(opt.n_eval):
-            k1 = x[j][:, 0][:, None, None, :, :]
-            k2 = x[j + 1][:, 0][:, None, None, :, :]
-            k3 = x[j + 2][:, 0][:, None, None, :, :]
-
-            input.append(torch.cat((k1, k2, k3), 2))
+            # k1 = x[j][:, 0][:, None, None, :, :]
+            # k2 = x[j + 1][:, 0][:, None, None, :, :]
+            # k3 = x[j + 2][:, 0][:, None, None, :, :]
+            # x.shape -> seq_len, batch_size, 1 , channels, height , width
+            input.append(x[j][:, None])
         mse = 0
         mse = train(input, epoch)
         epoch_mse += mse
@@ -240,11 +233,11 @@ for epoch in tqdm(range(opt.niter)):
             x = data_utils.normalize_data(opt, dtype, test_seq)
             input = []
             for j in range(opt.n_eval):
-                k1 = x[j][:, 0][:, None, None, :, :]
-                k2 = x[j + 1][:, 0][:, None, None, :, :]
-                k3 = x[j + 2][:, 0][:, None, None, :, :]
-
-                input.append(torch.cat((k1, k2, k3), 2))
+                # k1 = x[j][:, 0][:, None, None, :, :]
+                # k2 = x[j + 1][:, 0][:, None, None, :, :]
+                # k3 = x[j + 2][:, 0][:, None, None, :, :]
+                # x.shape -> seq_len, batch_size, 1 , channels, height , width
+                input.append(x[j][:, None])
             if i == 0:
                 ssim = plot(input, epoch, True)
             else:
