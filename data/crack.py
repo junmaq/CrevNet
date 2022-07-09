@@ -21,7 +21,8 @@ class Crack(object):
         image_frames = []
 
         for frame_idx, img_path in enumerate(sorted((Path(self.data_root) /
-                                                     self.crack_video_frames[index]).glob('*.jpg'))):
+                                                     self.crack_video_frames[index]).glob('*.jpg'),
+                                                    key=lambda file: int(file.name.split('_')[-1].split('.')[0]))):
             image_frame = imread(str(img_path))
             image_frame_resized = resize(image_frame, output_shape=self.image_size)
             image_frames.append(image_frame_resized)
