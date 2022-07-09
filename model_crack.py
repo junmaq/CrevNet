@@ -31,8 +31,8 @@ parser.add_argument('--image_size', type=tuple, default=(256, 128),
                     help='the height / width of the input image to network')
 parser.add_argument('--channels', default=1, type=int)
 parser.add_argument('--dataset', default='crack', help='dataset to train with')
-parser.add_argument('--n_past', type=int, default=12, help='number of frames to condition on')
-parser.add_argument('--n_future', type=int, default=8, help='number of frames to predict')
+parser.add_argument('--n_past', type=int, default=14, help='number of frames to condition on')
+parser.add_argument('--n_future', type=int, default=6, help='number of frames to predict')
 parser.add_argument('--n_eval', type=int, default=20, help='number of frames to predict at eval time')
 parser.add_argument('--rnn_size', type=int, default=32, help='dimensionality of hidden layer')
 parser.add_argument('--predictor_rnn_layers', type=int, default=8, help='number of layers')
@@ -248,7 +248,7 @@ for epoch in tqdm(range(opt.niter)):
             epoch, epoch_mse / len(train_loader), eval/100.0, epoch*len(train_loader)*opt.batch_size))
 
     # save the model
-    if epoch % 10 == 0:
+    if epoch % 20 == 0:
         torch.save({
             'encoder': encoder,
             'frame_predictor': frame_predictor,

@@ -26,7 +26,7 @@ class Crack(object):
             image_frame_resized = resize(image_frame, output_shape=self.image_size)
             image_frames.append(image_frame_resized)
 
-        image_frames_sub_sampled = self._subsample_images(image_frames[1:])
+        image_frames_sub_sampled = self._subsample_images(image_frames[21:])
         return image_frames_sub_sampled
 
     def _subsample_images(self, image_frames: List[np.ndarray]) -> np.ndarray:
