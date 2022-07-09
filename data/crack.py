@@ -26,7 +26,7 @@ class Crack(object):
             image_frame_resized = resize(image_frame, output_shape=self.image_size)
             image_frames.append(image_frame_resized)
 
-        image_frames_sub_sampled = self._subsample_images(image_frames[21:])
+        image_frames_sub_sampled = self._subsample_images(image_frames[41:])
         return image_frames_sub_sampled
 
     def _subsample_images(self, image_frames: List[np.ndarray]) -> np.ndarray:
@@ -34,8 +34,6 @@ class Crack(object):
                                    dtype=np.float32)
         stride = int(np.ceil(len(image_frames) / self.seq_len))
         image_frames_sub = image_frames[::stride]
-        if len(image_frames_sub) < self.seq_len:
-            image_frames_sub.append(image_frames[-1])
         assert len(image_frames_sub) == self.seq_len, f"After subsampling length of image frame should be equal to " \
                                                       f"the sequence length got image_frames={len(image_frames_sub)}" \
                                                       f" for seq_len={self.seq_len}"
